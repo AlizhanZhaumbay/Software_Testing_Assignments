@@ -9,15 +9,6 @@ ${BROWSERSTACK_USERNAME}    %{BROWSERSTACK_USERNAME}
 ${BROWSERSTACK_ACCESS_KEY}    %{BROWSERSTACK_ACCESS_KEY}
 ${BROWSERSTACK_URL}    https://${BROWSERSTACK_USERNAME}:${BROWSERSTACK_ACCESS_KEY}@hub-cloud.browserstack.com/wd/hub
 
-&{BSTACK_COMMON}    os=Windows    osVersion=11    build=Homework 3+4
-&{BSTACK_CHROME}    &{BSTACK_COMMON}    sessionName=Chrome Tests
-&{BSTACK_FIREFOX}   &{BSTACK_COMMON}    sessionName=Firefox Tests
-&{BSTACK_SAFARI}    os=OS X    osVersion=Ventura    build=Homework 3+4    sessionName=Safari Tests
-
-&{CAPS_CHROME}    browserName=Chrome    browserVersion=latest    bstack:options=${BSTACK_CHROME}
-&{CAPS_FIREFOX}   browserName=Firefox   browserVersion=latest    bstack:options=${BSTACK_FIREFOX}
-&{CAPS_SAFARI}    browserName=Safari   browserVersion=latest    bstack:options=${BSTACK_SAFARI}
-
 *** Keywords ***
 Get Chrome Capabilities
     [Arguments]    ${test_name}
@@ -75,15 +66,8 @@ Get Safari Capabilities
 
 Open BrowserStack Browser
     [Arguments]    ${browser_name}    ${test_name}
-    IF    '${browser_name}' == 'Chrome'
-        ${caps}=    Get Chrome Capabilities    ${test_name}
-    ELSE IF    '${browser_name}' == 'Firefox'
-        ${caps}=    Get Firefox Capabilities    ${test_name}
-    ELSE IF    '${browser_name}' == 'Safari'
-        ${caps}=    Get Safari Capabilities    ${test_name}
-    ELSE
-        Fail    Unsupported browser: ${browser_name}
-    END
+    ${caps}=    Evaluate    __import__('browserstack_config').get_capabilities('${browser_name}', '${test_name}')
+    ${remote}=   Evaluate    __import__('browserstack_config').BROWSERSTACK_URL
     Open Browser    ${baseUrl}    remote_url=${BROWSERSTACK_URL}    desired_capabilities=${caps}
     Maximize Browser Window
 
